@@ -43,6 +43,21 @@ if (tempPointer == NULL) {
 (*pointer)[*size-1]='\0';
 
 }
+void backspace(char **pointer,int *memSize){
+   if (*memSize == 1){
+   return;
+   };
+   *memSize -=1;
+   char *tempPointer = realloc(*pointer, *memSize);
+   if (tempPointer == NULL) {
+   perror("failed to allocate memory");
+   free(*pointer);
+   exit(1);
+   };
+*pointer = tempPointer;
+(*pointer)[*memSize-1]='\0';
+
+}
 
 int main() {
     printf("main function hit\n");
@@ -53,14 +68,21 @@ int main() {
     if (pointer == NULL) {
     perror("failed to allocate memory");
     return 1;
-    }
+    };
     
     int memSize = 1;    
     char c;
 
     while (read(STDIN_FILENO, &c, 1) == 1 && c != '~'){
+    
+    if (c == 127){
+    backspace(&pointer, &memSize);
+    write(STDOUT_FILENO, "\b \b",3);
+    }
+    else{
     write(STDOUT_FILENO, &c,1);
     memAdd(c, &pointer, &memSize);
+    }
     }
 
     printf("\nCaptured text: %s\n", pointer);
