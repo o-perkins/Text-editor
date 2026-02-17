@@ -1,12 +1,12 @@
 #include <termios.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 struct termios origtermios;
 
 void DefaultTerminal(){
     printf("default function hit\n");
-
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &origtermios);
 
 
@@ -29,18 +29,43 @@ void RawMode(){
 
 }
 
+void memAdd(char c, char **pointer, int *size){
+*size +=1;
 
+char *tempPointer = realloc(*pointer, *size);
+if (tempPointer == NULL) {
+    perror("failed to allocate memory");
+    free(*pointer);
+    exit(1);
+}
+*pointer = tempPointer;
+(*pointer)[*size-2] = c;
+(*pointer)[*size-1]='\0';
+
+}
 
 int main() {
     printf("main function hit\n");
-    RawMode();    
+    RawMode();
     
-    char c;
-    while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q'){
-    write(STDOUT_FILENO, &c,1);
+
+    char *pointer = malloc(1);
+    if (pointer == NULL) {
+    perror("failed to allocate memory");
+    return 1;
     }
+    
+    int memSize = 1;    
+    char c;
+
+    while (read(STDIN_FILENO, &c, 1) == 1 && c != '~'){
+    write(STDOUT_FILENO, &c,1);
+    memAdd(c, &pointer, &memSize);
+    }
+
+    printf("\nCaptured text: %s\n", pointer);
     DefaultTerminal();
 
-
+	
     return 0;
 }
