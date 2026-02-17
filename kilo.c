@@ -5,7 +5,7 @@
 struct termios origtermios;
 
 void DefaultTerminal(){
-    printf("default function hit");
+    printf("default function hit\n");
 
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &origtermios);
 
@@ -14,7 +14,7 @@ void DefaultTerminal(){
 
 
 void RawMode(){
-    printf("raw mode function hit");
+    printf("raw mode function hit\n");
     tcgetattr(STDIN_FILENO, &origtermios);
 
     struct termios raw;
@@ -32,15 +32,15 @@ void RawMode(){
 
 
 int main() {
-    printf("main function hit");
+    printf("main function hit\n");
     RawMode();    
     
     char c;
     while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q'){
-    printf("while loop condition met and run");
     write(STDOUT_FILENO, &c,1);
     }
     DefaultTerminal();
+
 
     return 0;
 }
