@@ -29,45 +29,44 @@ void RawMode(){
 
 }
 
-void memAdd(char c, char **pointer, int *size){
-*size +=1;
+void memAdd(char c, char **pointer, int *size)
+{
+    *size +=1;
 
-char *tempPointer = realloc(*pointer, *size);
-if (tempPointer == NULL) {
-    perror("failed to allocate memory");
-    free(*pointer);
-    exit(1);
-}
-*pointer = tempPointer;
-(*pointer)[*size-2] = c;
-(*pointer)[*size-1]='\0';
+    char *tempPointer = realloc(*pointer, *size);
+    if (tempPointer == NULL) {
+        perror("failed to allocate memory\n");
+        free(*pointer);
+        exit(1);
+    }
+    *pointer = tempPointer;
+    (*pointer)[*size-2] = c;
+    (*pointer)[*size-1]='\0';
 
 }
 void backspace(char **pointer,int *memSize){
-   if (*memSize == 1){
-   return;
-   };
-   *memSize -=1;
-   char *tempPointer = realloc(*pointer, *memSize);
-   if (tempPointer == NULL) {
-   perror("failed to allocate memory");
-   free(*pointer);
-   exit(1);
-   };
-*pointer = tempPointer;
-(*pointer)[*memSize-1]='\0';
+    if (*memSize == 1){
+        return;
+    };
+    *memSize -=1;
+    char *tempPointer = realloc(*pointer, *memSize);
+    if (tempPointer == NULL) {
+        perror("failed to allocate memory");
+        free(*pointer);
+        exit(1);
+    };
+    *pointer = tempPointer;
+    (*pointer)[*memSize-1]='\0';
 
 }
 
-int main() {
-    printf("main function hit\n");
-    RawMode();
-    
+char* textbox(){
+
 
     char *pointer = malloc(1);
     if (pointer == NULL) {
-    perror("failed to allocate memory");
-    return 1;
+        perror("failed to allocate memory\n");
+    return NULL;
     };
     
     int memSize = 1;    
@@ -76,16 +75,50 @@ int main() {
     while (read(STDIN_FILENO, &c, 1) == 1 && c != '~'){
     
     if (c == 127){
-    backspace(&pointer, &memSize);
-    write(STDOUT_FILENO, "\b \b",3);
+        backspace(&pointer, &memSize);
+        write(STDOUT_FILENO, "\b \b",3);
     }
     else{
-    write(STDOUT_FILENO, &c,1);
-    memAdd(c, &pointer, &memSize);
+        write(STDOUT_FILENO, &c,1);
+        memAdd(c, &pointer, &memSize);
     }
     }
+    return pointer;
+}
 
-    printf("\nCaptured text: %s\n", pointer);
+void saveFile(char *pntr)
+{
+    write(STDOUT_FILENO, "name your file: ", 16);
+    char *savepntr = textbox();
+    if (savepntr == NULL) {
+        perror("failed to allocate memory\n");
+    return;
+    }
+    FILE *file = fopen(savepntr, "w");
+    if (file == NULL) {
+        perror("Error opening file for writing");
+        free(savepntr);
+        return;
+    }
+    fprintf(file, "%s", pntr);
+    fclose(file);
+
+    printf("\nCaptured text to file: %s\n", savepntr);
+    free(pntr);
+    free(savepntr);
+}
+
+
+int main() {
+    printf("main function hit\n");
+    RawMode();
+    
+    char *pntr = textbox();
+    
+    printf("\nCaptured text: %s\n", pntr);
+
+    
+    saveFile(pntr);
     DefaultTerminal();
 
 	
